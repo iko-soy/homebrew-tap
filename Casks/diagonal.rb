@@ -36,11 +36,13 @@ cask "diagonal" do
   ]
 
   caveats <<~EOS
-    Load the extension in Brave once:
-      1. Open brave://extensions and turn on Developer mode.
-      2. Click "Load unpacked", press Cmd+Shift+G and paste:
+    Finish setting up Diagonal once:
+      1. Accept Apple's terms for the fm tool (asks for your password):
+           sudo fm license
+      2. Open brave://extensions and turn on Developer mode.
+      3. Click "Load unpacked", press Cmd+Shift+G and paste:
            ~/Library/Application Support/Diagonal/extension
-      3. Open Diagonal's settings and click "Run self-test".
+      4. Open Diagonal's settings and click "Run self-test".
 
     To update: brew upgrade --cask --greedy diagonal
     then click reload on Diagonal in brave://extensions.

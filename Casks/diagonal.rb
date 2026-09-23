@@ -15,15 +15,22 @@ cask "diagonal" do
   # if Apple's terms for fm are not accepted yet, runs `sudo fm license` so the user can read and
   # accept or decline them. Kernel.system keeps the terminal attached for that prompt.
   postflight do
+    # Anything raised here makes brew roll back through uninstall_postflight, which would delete the
+    # extension and the host it just installed, so report problems instead of raising.
     extension = Pathname("~/Library/Application Support/Diagonal/extension").expand_path
-    FileUtils.rm_rf extension
-    extension.dirname.mkpath
-    FileUtils.cp_r "#{staged_path}/.", extension
-    system_command "/usr/bin/xattr", args: ["-cr", extension.to_s]
-    Kernel.system "/bin/bash", "#{extension}/install-host.command"
     manifest = Pathname("~/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/io.diagonal.host.json").expand_path
+    begin
+      FileUtils.rm_rf extension
+      extension.dirname.mkpath
+      FileUtils.cp_r "#{staged_path}/.", extension
+      Kernel.system "/usr/bin/xattr", "-cr", extension.to_s
+      Kernel.system "/bin/bash", "#{extension}/install-host.command"
+    rescue => e
+      Kernel.warn "Diagonal: #{e.class}: #{e.message}"
+    end
     unless manifest.exist? && manifest.read.include?("io.diagonal.host")
-      opoo "Diagonal's native host was not registered with Brave. Run: bash '#{extension}/install-host.command'"
+      Kernel.warn "Diagonal's native host was not registered with Brave. " \
+                  "Run: bash '#{extension}/install-host.command' (log: ~/Library/Logs/Diagonal/install.log)"
     end
   end
 

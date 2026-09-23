@@ -24,7 +24,7 @@ A Brave extension that groups and names tabs with Apple's on-device model ([iko-
 brew install iko-soy/tap/diagonal
 ```
 
-Then run `sudo fm license` once to accept Apple's terms for `fm`, and load `~/Library/Application Support/Diagonal/extension` at `brave://extensions` (Developer mode → Load unpacked). The cask's caveats walk through it.
+The install shows Apple's terms for `fm` if they haven't been accepted on this Mac yet. Then load `~/Library/Application Support/Diagonal/extension` at `brave://extensions` (Developer mode → Load unpacked). The cask's caveats walk through it.
 
 ### SourceDocsSwift
 

@@ -11,14 +11,16 @@ cask "diagonal" do
   depends_on arch: :arm64
 
   # The unpacked extension lives at a fixed path so Brave keeps loading it across upgrades;
-  # install-host.command (shipped in the zip) installs the native host and registers it with Brave.
+  # install-host.command (shipped in the zip) installs the native host, registers it with Brave and,
+  # if Apple's terms for fm are not accepted yet, runs `sudo fm license` so the user can read and
+  # accept or decline them. Kernel.system keeps the terminal attached for that prompt.
   postflight do
     extension = Pathname("~/Library/Application Support/Diagonal/extension").expand_path
     FileUtils.rm_rf extension
     extension.dirname.mkpath
     FileUtils.cp_r "#{staged_path}/.", extension
     system_command "/usr/bin/xattr", args: ["-cr", extension.to_s]
-    system_command "/bin/bash", args: ["#{extension}/install-host.command"], print_stdout: true
+    Kernel.system "/bin/bash", "#{extension}/install-host.command"
   end
 
   uninstall_postflight do
@@ -36,13 +38,13 @@ cask "diagonal" do
   ]
 
   caveats <<~EOS
-    Finish setting up Diagonal once:
-      1. Accept Apple's terms for the fm tool (asks for your password):
-           sudo fm license
-      2. Open brave://extensions and turn on Developer mode.
-      3. Click "Load unpacked", press Cmd+Shift+G and paste:
+    Load the extension in Brave once:
+      1. Open brave://extensions and turn on Developer mode.
+      2. Click "Load unpacked", press Cmd+Shift+G and paste:
            ~/Library/Application Support/Diagonal/extension
-      4. Open Diagonal's settings and click "Run self-test".
+
+    If you declined Apple's terms for fm during install, Diagonal
+    waits until you run: sudo fm license
 
     To update: brew upgrade --cask --greedy diagonal
     then click reload on Diagonal in brave://extensions.

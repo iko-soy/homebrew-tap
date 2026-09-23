@@ -39,7 +39,9 @@ cask "diagonal" do
       File.expand_path("~/Library/Application Support/Diagonal/extension"),
       File.expand_path("~/.local/share/diagonal-host"),
       File.expand_path("~/.local/bin/diagonal-host"),
-      File.expand_path("~/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/io.diagonal.host.json"),
+      *%w[Brave-Browser Brave-Browser-Beta Brave-Browser-Nightly].map do |channel|
+        File.expand_path("~/Library/Application Support/BraveSoftware/#{channel}/NativeMessagingHosts/io.diagonal.host.json")
+      end,
     ]
   end
 

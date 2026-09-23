@@ -16,6 +16,16 @@ A macOS client for [Parseable](https://github.com/ilyakooo0/parseable-macos).
 brew install --cask parseable-viewer
 ```
 
+### Diagonal
+
+A Brave extension that groups and names tabs with Apple's on-device model ([iko-soy/diagonal](https://github.com/iko-soy/diagonal)).
+
+```
+brew install iko-soy/tap/diagonal
+```
+
+Then load `~/Library/Application Support/Diagonal/extension` once at `brave://extensions` (Developer mode → Load unpacked). The cask's caveats walk through it.
+
 ### SourceDocsSwift
 
 ```

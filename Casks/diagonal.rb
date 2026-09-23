@@ -21,6 +21,10 @@ cask "diagonal" do
     FileUtils.cp_r "#{staged_path}/.", extension
     system_command "/usr/bin/xattr", args: ["-cr", extension.to_s]
     Kernel.system "/bin/bash", "#{extension}/install-host.command"
+    manifest = Pathname("~/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts/io.diagonal.host.json").expand_path
+    unless manifest.exist? && manifest.read.include?("io.diagonal.host")
+      opoo "Diagonal's native host was not registered with Brave. Run: bash '#{extension}/install-host.command'"
+    end
   end
 
   uninstall_postflight do

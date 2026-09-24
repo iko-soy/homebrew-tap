@@ -1,8 +1,8 @@
 cask "diagonal" do
   # .github/workflows/diagonal.yml bumps version and sha256 whenever iko-soy/diagonal publishes a release,
   # so a plain `brew upgrade` picks it up.
-  version "2026.09.24.0624"
-  sha256 "3c903f4a47deebc223ba8f6ebb9dc547875413f99e129365a4e01b50389f9e1c"
+  version "2026.09.24.0635"
+  sha256 "dbb5a7337d4061ddb5982286649d2cb76fa7a7bb80eb78856fdf2bcc51fc8572"
 
   url "https://github.com/iko-soy/diagonal/releases/download/#{version}/diagonal-extension-#{version}.zip",
       verified: "github.com/iko-soy/diagonal/"

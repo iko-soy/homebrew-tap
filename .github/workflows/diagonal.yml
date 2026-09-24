@@ -1,0 +1,43 @@
+name: Bump diagonal
+
+# iko-soy/diagonal publishes a release on every push to master. This checks for a new one and moves
+# Casks/diagonal.rb to it, so `brew upgrade` picks it up. It runs on a schedule because a workflow in
+# diagonal would need a token with write access here to trigger it.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump-diagonal
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Point the cask at the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(gh release view --repo iko-soy/diagonal --json tagName --jq .tagName)
+          asset="diagonal-extension-${version}.zip"
+          gh release download "$version" --repo iko-soy/diagonal --pattern "$asset" --dir /tmp
+          sha=$(sha256sum "/tmp/$asset" | cut -d' ' -f1)
+          echo "latest $version $sha"
+          sed -i -E \
+            -e "s/^  version \".*\"$/  version \"${version}\"/" \
+            -e "s/^  sha256 \".*\"$/  sha256 \"${sha}\"/" \
+            Casks/diagonal.rb
+          grep -q "version \"${version}\"" Casks/diagonal.rb
+          grep -q "sha256 \"${sha}\"" Casks/diagonal.rb
+          if git diff --quiet; then echo "already on $version"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "diagonal ${version}"
+          git push

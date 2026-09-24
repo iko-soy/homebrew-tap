@@ -1,8 +1,10 @@
 cask "diagonal" do
-  version :latest
-  sha256 :no_check
+  # .github/workflows/diagonal.yml bumps version and sha256 whenever iko-soy/diagonal publishes a release,
+  # so a plain `brew upgrade` picks it up.
+  version "2026.09.24.0624"
+  sha256 "3c903f4a47deebc223ba8f6ebb9dc547875413f99e129365a4e01b50389f9e1c"
 
-  url "https://github.com/iko-soy/diagonal/releases/latest/download/diagonal-extension.zip",
+  url "https://github.com/iko-soy/diagonal/releases/download/#{version}/diagonal-extension-#{version}.zip",
       verified: "github.com/iko-soy/diagonal/"
   name "Diagonal"
   desc "Chromium browser extension that groups and names tabs with Apple's on-device model"
@@ -10,7 +12,8 @@ cask "diagonal" do
 
   depends_on arch: :arm64
 
-  # The unpacked extension lives at a fixed path so the browser keeps loading it across upgrades;
+  # The unpacked extension lives at a fixed path so the browser keeps loading it across upgrades, and the
+  # running extension reloads itself once the newer files are there;
   # install-host.command (shipped in the zip) installs the native host, registers it with every Chromium
   # browser on the Mac (Brave, Chrome, Edge, Arc, …) and,
   # if Apple's terms for fm are not accepted yet, runs `sudo fm license` so the user can read and
@@ -20,10 +23,17 @@ cask "diagonal" do
     # extension and the host it just installed, so report problems instead of raising.
     extension = Pathname("~/Library/Application Support/Diagonal/extension").expand_path
     begin
-      FileUtils.rm_rf extension
+      # Copy next to the old folder, then swap it in with renames, so a browser that reads the folder
+      # mid-upgrade sees either the old release or the new one, never a half-copied mix.
+      incoming = Pathname("#{extension}.incoming")
+      outgoing = Pathname("#{extension}.outgoing")
+      FileUtils.rm_rf [incoming, outgoing]
       extension.dirname.mkpath
-      FileUtils.cp_r "#{staged_path}/.", extension
-      Kernel.system "/usr/bin/xattr", "-cr", extension.to_s
+      FileUtils.cp_r "#{staged_path}/.", incoming
+      Kernel.system "/usr/bin/xattr", "-cr", incoming.to_s
+      File.rename(extension, outgoing) if extension.exist?
+      File.rename(incoming, extension)
+      FileUtils.rm_rf outgoing
       Kernel.system "/bin/bash", "#{extension}/install-host.command"
     rescue => e
       Kernel.warn "Diagonal: #{e.class}: #{e.message}"
@@ -61,7 +71,7 @@ cask "diagonal" do
     If you declined Apple's terms for fm during install, Diagonal
     waits until you run: sudo fm license
 
-    To update: brew upgrade --cask --greedy diagonal
-    then click reload on Diagonal in chrome://extensions.
+    Updates come with brew upgrade. Diagonal reloads itself into the
+    new version within a couple of minutes; nothing to click.
   EOS
 end

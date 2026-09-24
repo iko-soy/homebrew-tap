@@ -6,10 +6,15 @@ name: Bump diagonal
 on:
   schedule:
     - cron: "*/30 * * * *"
+    # GitHub turns off scheduled workflows in a repository with no activity for 60 days, which would
+    # silently stop the bumps if diagonal goes quiet for a while. Re-enabling the workflow through the API
+    # once a week resets that timer without adding commits.
+    - cron: "7 4 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: bump-diagonal
@@ -19,6 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Keep the schedule alive
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '7 4 * * 1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/diagonal.yml/enable"
 
       - name: Point the cask at the latest release
         env:
